@@ -6,6 +6,7 @@ import { faSearch, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 const News = () => {
   const [news, setNews] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [selectedArticleDetails, setSelectedArticleDetails] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newsType, setNewsType] = useState('world'); // Default to 'world' news
   const [darkMode, setDarkMode] = useState(false);
@@ -22,7 +23,7 @@ const News = () => {
 
   const fetchNews = async () => {
     setLoading(true);
-    try {                            //  https://newsapi.org/v2/top-headlines?country=in&apiKey=d10b0b6243c24c9887ce9df42bbabfcc
+    try {
       const response = await axios.get(`https://newsapi.org/v2/top-headlines?country=in&q=${searchQuery}&apiKey=d10b0b6243c24c9887ce9df42bbabfcc`);
       setNews(response.data.articles);
     } catch (error) {
@@ -32,13 +33,9 @@ const News = () => {
     }
   };
 
-  const handleShowSource = (url) => {
-    // If the clicked article is already selected, reset the selected article
-    if (selectedArticle === url) {
-      setSelectedArticle(null);
-    } else {
-      setSelectedArticle(url);
-    }
+  const handleShowSource = (article) => {
+    setSelectedArticle(article.url);
+    setSelectedArticleDetails(article);
   };
 
   const handleSearchChange = (event) => {
@@ -92,7 +89,7 @@ const News = () => {
           value={searchQuery}
           onChange={handleSearchChange}
         />
-        <button className="btn btn-primary rounded-pill" onClick={fetchNews}>
+        <button  id="serach"className="btn btn-primary rounded-pill" onClick={fetchNews}>
           <FontAwesomeIcon icon={faSearch} />
         </button>
       </div>
@@ -108,20 +105,37 @@ const News = () => {
                 <p className="card-text">{article.description}</p>
                 <button
                   className="btn btn-primary"
-                  onClick={() => handleShowSource(article.url)}
+                  onClick={() => handleShowSource(article)}
                 >
                   Show Source
                 </button>
-                {selectedArticle === article.url && (
-                  <div>
-                    <p className="mt-2">Source: {article.source.name}</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         ))}
       </div>
+      {selectedArticleDetails && (
+        <div className="modal" tabIndex="-1" role="dialog" style={{display: 'block'}}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{selectedArticleDetails.title}</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close" onClick={() => setSelectedArticleDetails(null)}>
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <p>{selectedArticleDetails.description}</p>
+                <p>Author: {selectedArticleDetails.author}</p>
+                <p>Published At: {selectedArticleDetails.publishedAt}</p>
+                <p>Source: {selectedArticleDetails.source.name}</p>
+                <p>URL: <a href={selectedArticleDetails.url} target="_blank" rel="noreferrer">{selectedArticleDetails.url}</a></p>
+                <img src={selectedArticleDetails.urlToImage} className="img-fluid" alt={selectedArticleDetails.title} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -27,7 +27,11 @@ const News = () => {
       const response = await axios.get(`https://newsapi.org/v2/top-headlines?country=in&q=${searchQuery}&apiKey=d10b0b6243c24c9887ce9df42bbabfcc`);
       setNews(response.data.articles);
     } catch (error) {
-      setError('Error fetching news. Please try again later.');
+      if (error.response && error.response.status === 426) {
+        setError('Upgrade Required: Please use a secure connection (HTTPS).');
+      } else {
+        setError('Error fetching news. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
